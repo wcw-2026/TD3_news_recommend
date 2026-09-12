@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>今日推荐 - 发现你的世界</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            position: relative;
+            overflow: hidden;  /* 防止整体滚动，但内部卡片仍可能溢出，我们确保卡片高度不超过视口 */
+        }
+
+        /* 动态背景效果 */
+        .bg-shape {
+            position: absolute;
+            width: 300px;
+            height: 300px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            animation: float 20s infinite;
+        }
+
+        .bg-shape:nth-child(1) {
+            top: 10%;
+            left: -100px;
+            width: 400px;
+            height: 400px;
+            animation-delay: 0s;
+        }
+
+        .bg-shape:nth-child(2) {
+            bottom: 10%;
+            right: -100px;
+            width: 500px;
+            height: 500px;
+            animation-delay: 5s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            50% { transform: translate(30px, 30px) rotate(180deg); }
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 480px;
+            padding: 16px;   /* 减小外内边距 */
+            z-index: 10;
+            animation: slideUp 0.6s ease-out;
+        }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .login-card {
+            background: rgba(255, 255, 255, 0.98);
+            border-radius: 28px;
+            backdrop-filter: blur(10px);
+            padding: 24px 28px;   /* 减小上下内边距 */
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+            transition: transform 0.3s ease;
+        }
+
+        .login-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 20px;   /* 减小下边距 */
+        }
+
+        .logo-icon {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 18px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 12px;
+            box-shadow: 0 10px 25px -5px rgba(102, 126, 234, 0.4);
+        }
+
+        .logo-icon span {
+            font-size: 32px;
+        }
+
+        .logo h1 {
+            font-size: 26px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 4px;
+        }
+
+        .logo p {
+            color: #64748b;
+            font-size: 13px;
+        }
+
+        .input-group {
+            margin-bottom: 16px;   /* 减小间距 */
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 6px;
+            color: #334155;
+            font-weight: 500;
+            font-size: 13px;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 10px 14px;    /* 减小内边距 */
+            border: 2px solid #e2e8f0;
+            border-radius: 14px;
+            font-size: 15px;
+            transition: all 0.2s;
+            background: #f8fafc;
+        }
+
+        .input-group input:focus {
+            border-color: #667eea;
+            outline: none;
+            background: white;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .interests {
+            margin: 16px 0 20px;   /* 减小上下边距 */
+        }
+
+        .interests h3 {
+            color: #334155;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tags-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;   /* 减小间隙 */
+        }
+
+        .tag-item {
+            position: relative;
+        }
+
+        .tag-item input {
+            position: absolute;
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .tag-item label {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 12px;    /* 减小内边距 */
+            background: #f1f5f9;
+            border: 2px solid transparent;
+            border-radius: 40px;
+            color: #475569;
+            font-size: 13px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .tag-item input:checked + label {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border-color: transparent;
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        }
+
+        .tag-item label:hover {
+            border-color: #667eea;
+            transform: translateY(-1px);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 12px;    /* 减小内边距 */
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            border-radius: 40px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 8px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .login-btn::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 0;
+            height: 0;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.3);
+            transform: translate(-50%, -50%);
+            transition: width 0.6s, height 0.6s;
+        }
+
+        .login-btn:hover::before {
+            width: 300px;
+            height: 300px;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px -5px rgba(102, 126, 234, 0.5);
+        }
+
+        .error {
+            color: #ef4444;
+            margin-top: 12px;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        .tip {
+            text-align: center;
+            color: #94a3b8;
+            margin-top: 16px;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-shape"></div>
+    <div class="bg-shape"></div>
+
+    <div class="login-container">
+        <div class="login-card">
+            <div class="logo">
+                <div class="logo-icon">
+                    <span>📰</span>
+                </div>
+                <h1>今日推荐</h1>
+                <p>发现你感兴趣的新闻</p>
+            </div>
+
+            <div class="input-group">
+                <label>👤 用户名</label>
+                <input type="text" id="username" placeholder="输入你的用户名">
+            </div>
+
+            <div class="input-group">
+                <label>🔐 密码</label>
+                <input type="password" id="password" placeholder="输入密码">
+            </div>
+
+            <div class="interests">
+                <h3>🏷️ 选择你的兴趣标签</h3>
+                <div class="tags-grid" id="interestsContainer"></div>
+            </div>
+
+            <button class="login-btn" onclick="login()">✨ 进入今日推荐</button>
+            <div id="errorMsg" class="error"></div>
+            <div class="tip">💡 选中的标签会获得更高的推荐权重</div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:5000';
+        let categories = [];
+
+        async function loadCategories() {
+            try {
+                const response = await fetch(`${API_BASE}/stats`);
+                if (!response.ok) throw new Error('获取分类失败');
+                const data = await response.json();
+                if (data.category_stats && typeof data.category_stats === 'object') {
+                    categories = Object.keys(data.category_stats);
+                } else {
+                    throw new Error('无效的分类数据');
+                }
+            } catch (error) {
+                console.warn('从后端获取分类失败，使用默认分类列表', error);
+                categories = ['科技', '体育', '娱乐', '财经', '军事', '社会', '教育', '健康', '国际', '时尚'];
+            }
+            renderTags();
+        }
+
+        function renderTags() {
+            const container = document.getElementById('interestsContainer');
+            container.innerHTML = '';
+            categories.forEach(cat => {
+                container.innerHTML += `
+                    <div class="tag-item">
+                        <input type="checkbox" id="tag-${cat}" value="${cat}">
+                        <label for="tag-${cat}">${cat}</label>
+                    </div>
+                `;
+            });
+        }
+
+        window.onload = function() {
+            loadCategories();
+        };
+
+        async function login() {
+            const username = document.getElementById('username').value.trim();
+            const password = document.getElementById('password').value.trim();
+            if (!username || !password) {
+                document.getElementById('errorMsg').textContent = '用户名和密码不能为空';
+                return;
+            }
+            const interests = {};
+            categories.forEach(cat => interests[cat] = 0.1);
+            document.querySelectorAll('#interestsContainer input:checked').forEach(cb => {
+                interests[cb.value] = 0.8;
+            });
+
+            try {
+                const response = await fetch(`${API_BASE}/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password, interests })
+                });
+                const data = await response.json();
+                if (response.ok) {
+                    localStorage.setItem('currentUser', JSON.stringify({
+                        username: data.username,
+                        user_vector: data.user_vector
+                    }));
+                    window.location.href = 'index.html';
+                } else {
+                    document.getElementById('errorMsg').textContent = data.error || '登录失败';
+                }
+            } catch (error) {
+                document.getElementById('errorMsg').textContent = '网络错误，请确保API服务已启动';
+            }
+        }
+    </script>
+</body>
+</html>

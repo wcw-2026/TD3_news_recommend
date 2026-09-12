@@ -1,0 +1,1014 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>今日推荐 - 智能新闻阅读</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f7fb;
+            color: #1e293b;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 整体布局：全屏纵向 */
+        .app-container {
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        /* 顶部栏 */
+        .top-bar {
+            background: white url('image/image1.png') no-repeat center center;
+            background-size: cover;
+            border-bottom: 1px solid #e9ecef;
+            padding: 16px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            flex-shrink: 0;
+        }
+
+        .logo-area h2 {
+            font-size: 20px;
+            font-weight: 700;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .username {
+            font-size: 14px;
+            font-weight: 500;
+            background: #f1f3f5;
+            padding: 6px 14px;
+            border-radius: 40px;
+        }
+
+        .logout-btn {
+            background: none;
+            border: none;
+            color: #1e293b;
+            cursor: pointer;
+            font-size: 14px;
+            padding: 6px 12px;
+            border-radius: 40px;
+            transition: all 0.2s;
+        }
+
+        .logout-btn:hover {
+            background: #f1f3f5;
+            color: #ef4444;
+        }
+
+        /* 主内容区域：左右两栏布局 */
+        .main-layout {
+            display: flex;
+            flex: 1;
+            overflow: hidden;
+            padding: 16px 20px 20px 20px;
+            gap: 20px;
+        }
+
+        /* 左侧主内容区（推荐 + 分类新闻） */
+        .left-content {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            gap: 16px;
+        }
+
+        .category-list-horizontal {
+            display: flex;
+            flex-wrap: wrap;      /* 允许换行，避免挤压 */
+            gap: 12px;            /* 增大按钮间距 */
+        }
+
+        .cat-horizontal {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 8px 20px;    /* 增大左右内边距 */
+            border-radius: 40px;
+            background: #f1f3f5;
+            font-size: 14px;
+            font-weight: 500;
+            color: #495057;
+            cursor: pointer;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .cat-horizontal.active {
+            background: #3b82f6;   /* 更明亮的蓝色 */
+            color: white;
+        }
+
+        /* 右侧历史记录侧边栏 */
+        .right-sidebar {
+            width: 300px;
+            flex-shrink: 0;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .sidebar-header {
+            padding: 16px;
+            border-bottom: 1px solid #e9ecef;
+            font-weight: 600;
+            font-size: 16px;
+            background: #f8f9fa;
+        }
+
+        .history-list {
+            flex: 1;
+            overflow-y: auto;
+            padding: 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .history-item {
+            border: 1px solid #eef2f6;
+            border-radius: 12px;
+            padding: 10px;
+            background: #fbfcff;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+
+        .history-item:hover {
+            background: #f4f6fb;
+        }
+
+        .history-title {
+            font-weight: 600;
+            font-size: 13px;
+            margin-bottom: 4px;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .history-meta {
+            font-size: 11px;
+            color: #64748b;
+        }
+
+        /* 运营指标卡片 */
+        .metrics-section {
+            background: white;
+            border-radius: 20px;
+            padding: 12px 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            flex-shrink: 0;
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+        }
+
+        .metric-card {
+            background: #f8f9fb;
+            border: 1px solid #eef2f6;
+            border-radius: 12px;
+            padding: 8px 10px;
+        }
+
+        .metric-label {
+            font-size: 11px;
+            color: #6b7280;
+            margin-bottom: 4px;
+        }
+
+        .metric-value {
+            font-size: 18px;
+            font-weight: 700;
+            color: #334155;
+        }
+
+        .quick-tools {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+
+        .tool-btn {
+            padding: 4px 12px;
+            background: #f1f3f5;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 12px;
+            transition: all 0.2s;
+        }
+
+        .tool-btn.active {
+            background: #667eea;
+            color: white;
+        }
+
+        .view-tabs {
+            display: flex;
+            gap: 12px;
+            margin: 8px 0;
+            flex-shrink: 0;
+        }
+
+        /* 新闻网格：4列，每页8条正好两行 */
+        .news-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-top: 12px;
+        }
+
+        /* 响应式 */
+        @media (max-width: 1200px) {
+            .news-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+        @media (max-width: 900px) {
+            .news-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            .right-sidebar {
+                width: 260px;
+            }
+        }
+        @media (max-width: 700px) {
+            .main-layout {
+                flex-direction: column;
+            }
+            .right-sidebar {
+                width: 100%;
+                height: 250px;
+            }
+        }
+
+        /* 新闻卡片 */
+        .news-card {
+            background: white;
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: 0 1px 4px rgba(0,0,0,0.05);
+            transition: all 0.2s;
+            cursor: pointer;
+            border: 1px solid #eef2f6;
+        }
+        .news-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+        }
+        .news-card.read {
+            opacity: 0.7;
+            background: #fafbfc;
+        }
+        .news-img {
+            width: 100%;
+            height: 110px;
+            object-fit: cover;
+            background: #e9ecef;
+        }
+        .news-content {
+            padding: 10px;
+        }
+        .news-title {
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        .news-meta {
+            font-size: 10px;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 6px;
+        }
+        .news-category {
+            background: #f1f3f5;
+            padding: 2px 6px;
+            border-radius: 20px;
+        }
+        .news-summary {
+            font-size: 11px;
+            color: #495057;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            margin-bottom: 8px;
+        }
+        .news-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 10px;
+        }
+        .favorite-btn {
+            background: none;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+            transition: transform 0.2s;
+        }
+        .favorite-btn:active {
+            transform: scale(1.2);
+        }
+        .favorite-btn.active .heart-icon {
+            color: #ff3b3b;
+        }
+        .favorite-btn .heart-icon {
+            color: #aaa;
+        }
+
+        /* 分页控件 */
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            margin: 16px 0 8px;
+        }
+        .page-btn {
+            padding: 4px 12px;
+            background: #f1f3f5;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        .page-input {
+            width: 50px;
+            padding: 4px;
+            text-align: center;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+        }
+
+        /* 面板通用样式 */
+        .panel-section {
+            background: white;
+            border-radius: 20px;
+            padding: 14px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .section-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        /* 搜索卡片 */
+        .search-card {
+            background: white;
+            border-radius: 20px;
+            padding: 12px;
+            margin-bottom: 16px;
+        }
+        .search-card .search-input {
+            width: 100%;
+            border-radius: 40px;
+            border: 1px solid #dee2e6;
+            flex: 1;
+            padding: 10px 16px;
+            font-size: 14px;
+        }
+        .search-card .search-btn {
+            padding: 0 20px;        /* 原 0 16px，增加左右内边距 */
+            min-width: 70px;        /* 确保按钮有足够宽度 */
+            border-radius: 40px;
+            background: #667eea;
+            color: white;
+            border: none;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 14px;        /* 稍微增大字体 */
+        }
+
+        /* 搜索区域占位图 */
+        .search-placeholder {
+            min-height: 250px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 16px;
+            margin-top: 12px;
+        }
+
+        /* 搜索结果区域 */
+        .search-results {
+            min-height: 250px;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-top: 12px;
+        }
+
+        .search-results .news-grid {
+            margin-top: 0;
+        }
+
+        /* 模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            width: 90%;
+            max-width: 800px;
+            max-height: 85%;
+            border-radius: 24px;
+            overflow-y: auto;
+            padding: 24px;
+            position: relative;
+        }
+        .modal-close {
+            position: absolute;
+            top: 16px;
+            right: 20px;
+            font-size: 28px;
+            cursor: pointer;
+        }
+        .modal-body img {
+            max-width: 100%;
+            height: auto;
+            margin: 10px 0;
+        }
+        .loading, .error {
+            text-align: center;
+            padding: 40px;
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+<div class="app-container">
+    <!-- 顶部栏 -->
+    <div class="top-bar">
+        <div class="logo-area"><h2>📰 今日推荐</h2></div>
+        <div class="user-info">
+            <span class="username" id="usernameDisplay"></span>
+            <button class="logout-btn" onclick="logout()">退出</button>
+        </div>
+    </div>
+
+    <!-- 主布局：左右两栏 -->
+    <div class="main-layout">
+        <!-- 左侧主内容区 -->
+        <div class="left-content">
+            <!-- 运营指标 -->
+            <div class="metrics-section">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                    <span class="section-title" style="margin-bottom:0;">📊 运营指标</span>
+                </div>
+                <div class="metrics-grid">
+                    <div class="metric-card"><div class="metric-label">CTR</div><div id="metricCtr">--</div></div>
+                    <div class="metric-card"><div class="metric-label">活跃用户</div><div id="metricActiveUsers">--</div></div>
+                    <div class="metric-card"><div class="metric-label">平均停留(秒)</div><div id="metricDwell">--</div></div>
+                    <div class="metric-card"><div class="metric-label">收藏率</div><div id="metricFavoriteRate">--</div></div>
+                    <div class="metric-card"><div class="metric-label">曝光数</div><div id="metricExposure">--</div></div>
+                    <div class="metric-card"><div class="metric-label">反馈数</div><div id="metricFeedback">--</div></div>
+                </div>
+
+                <div class="quick-tools">
+                    <span id="behaviorSummary" style="margin-left:auto; font-size:12px;"></span>
+                </div>
+
+            </div>
+
+            <div class="quick-tools">
+                <button id="modeAll" class="tool-btn active" onclick="setViewMode('all')">全部</button>
+                <button id="modeFavorites" class="tool-btn" onclick="setViewMode('favorites')">仅收藏</button>
+                <button id="modeRead" class="tool-btn" onclick="setViewMode('read')">仅已读</button>
+            </div>
+
+            <!-- 搜索卡片 -->
+            <div class="search-card">
+                <div style="display: flex; gap: 8px;">
+                    <input type="text" id="searchKeyword" class="search-input" placeholder="输入新闻标题搜索...">
+                    <button class="search-btn" onclick="performSearch()">搜索</button>
+                </div>
+                <div id="searchPlaceholder" class="search-placeholder" style="display: flex;">
+                    <svg viewBox="0 0 24 24" width="40" height="40" fill="#667eea">
+                        <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                    </svg>
+                    <span style="font-size:13px;">🔍 搜索你感兴趣的新闻</span>
+                </div>
+                <div id="searchResults" class="search-results" style="display: none;"></div>
+            </div>
+
+            <!-- 视图切换（首页推荐 / 我的收藏） -->
+                <div class="view-tabs">
+                    <button id="tabHome" class="tool-btn active" onclick="switchPanel('home')">🏠 首页推荐</button>
+                    <button id="tabLatest" class="tool-btn" onclick="switchPanel('latest')">📰 最新</button>
+                    <button id="tabFavorites" class="tool-btn" onclick="switchPanel('favorites')">❤️ 我的收藏</button>
+                </div>
+
+                <!-- 推荐面板 -->
+                <div id="recommendPanel" class="panel-section" style="display: flex; flex-direction: column; gap: 16px;">
+                    <div class="section-title">
+                        <span>✨ 为你推荐</span>
+                        <button class="page-btn" onclick="refreshRecommend()">换一批</button>
+                    </div>
+                    <div id="recommendList" class="news-grid"></div>
+                </div>
+
+                <!-- 最新分类新闻面板（原分类新闻区域） -->
+                <div id="latestPanel" class="panel-section" style="display: none;">
+                    <div class="category-bar" style="margin-bottom: 8px; overflow-x: auto; white-space: nowrap;">
+                        <div class="category-list-horizontal" id="categoryListHorizontal" style="display: flex; gap: 8px;"></div>
+                    </div>
+                    <div class="section-title" id="categoryTitle">📰 最新 · 科技</div>
+                    <div id="categoryNewsList" class="news-grid"></div>
+                    <div id="pagination" class="pagination"></div>
+                </div>
+
+                <!-- 收藏面板 -->
+                <div id="favoritesPanel" class="panel-section" style="display: none;">
+                    <div class="section-title"><span>❤️ 我的收藏</span><span id="favoritesPanelSummary"></span></div>
+                    <div id="favoritesList" class="news-grid"></div>
+                    <div id="favoritesPagination" class="pagination"></div>
+                </div>
+            </div>
+        <!-- 右侧历史记录侧边栏 -->
+        <div class="right-sidebar">
+            <div class="sidebar-header">📖 历史记录</div>
+            <div id="historyList" class="history-list">
+                <div class="loading">加载中...</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 模态框 -->
+<div id="newsModal" class="modal">
+    <div class="modal-content">
+        <span class="modal-close" onclick="closeModal()">&times;</span>
+        <div id="modalContent"></div>
+    </div>
+</div>
+
+<script>
+    const API_BASE = '';
+    let currentUser = null;
+    let currentCategory = '科技';
+    let currentPage = 1;
+    let totalPages = 1;
+    let pageSize = 8;
+    let viewMode = 'all';
+    let currentPanel = 'home';
+    let lastRecommendNews = [];
+    let lastCategoryNews = [];
+    let newsMetaMap = {};
+    let favoritesPage = 1;
+    const favoritesPageSize = 8;
+    let favorites = JSON.parse(localStorage.getItem('favorites') || '{}');
+    let readNews = JSON.parse(localStorage.getItem('read_news_history') || '{}');
+
+    function saveFavorites() { localStorage.setItem('favorites', JSON.stringify(favorites)); }
+    function updateBehaviorSummary() {
+        const favCnt = Object.keys(favorites).length;
+        const readCnt = Object.keys(readNews).length;
+        document.getElementById('behaviorSummary').innerText = `收藏 ${favCnt} · 已读 ${readCnt}`;
+        document.getElementById('favoritesPanelSummary').innerText = `共 ${favCnt} 条`;
+    }
+
+    function switchPanel(panel) {
+        currentPanel = panel;
+        // 三个面板的显示/隐藏
+        document.getElementById('recommendPanel').style.display = panel === 'home' ? 'flex' : 'none';
+        document.getElementById('latestPanel').style.display = panel === 'latest' ? 'block' : 'none';
+        document.getElementById('favoritesPanel').style.display = panel === 'favorites' ? 'block' : 'none';
+        // 按钮高亮
+        document.getElementById('tabHome').classList.toggle('active', panel === 'home');
+        document.getElementById('tabLatest').classList.toggle('active', panel === 'latest');
+        document.getElementById('tabFavorites').classList.toggle('active', panel === 'favorites');
+        // 如果切换到收藏面板，重新渲染收藏列表
+        if (panel === 'favorites') {
+            renderFavoritesPanel();
+        }
+    }
+
+    function setViewMode(mode) {
+        viewMode = mode;
+        document.getElementById('modeAll').classList.toggle('active', mode === 'all');
+        document.getElementById('modeFavorites').classList.toggle('active', mode === 'favorites');
+        document.getElementById('modeRead').classList.toggle('active', mode === 'read');
+        renderRecommendList();
+        renderCategoryList();
+    }
+
+    function applyViewMode(newsList) {
+        if (!Array.isArray(newsList)) return [];
+        if (viewMode === 'favorites') return newsList.filter(item => isFavorite(item.news_id));
+        if (viewMode === 'read') return newsList.filter(item => isRead(item.news_id));
+        return newsList;
+    }
+
+    function cacheNewsList(list) {
+        if (!Array.isArray(list)) return;
+        list.forEach(item => { if (item && item.news_id) newsMetaMap[item.news_id] = item; });
+    }
+
+    function renderRecommendList() {
+        const container = document.getElementById('recommendList');
+        const filtered = applyViewMode(lastRecommendNews);
+        container.innerHTML = filtered.length ? filtered.map(renderNewsCard).join('') : '<div class="error">无推荐内容</div>';
+    }
+
+    function renderCategoryList() {
+        const container = document.getElementById('categoryNewsList');
+        const filtered = applyViewMode(lastCategoryNews);
+        container.innerHTML = filtered.length ? filtered.map(renderNewsCard).join('') : '<div class="error">暂无新闻</div>';
+    }
+
+    async function loadRecommend() {
+        const container = document.getElementById('recommendList');
+        container.innerHTML = '<div class="loading">加载推荐中...</div>';
+        try {
+            const res = await fetch(`${API_BASE}/recommend`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: currentUser.username, user_vector: currentUser.user_vector, top_k: 8 })
+            });
+            const data = await res.json();
+            if (data.recommendations) {
+                lastRecommendNews = data.recommendations;
+                cacheNewsList(lastRecommendNews);
+                renderRecommendList();
+            } else lastRecommendNews = [];
+        } catch(e) { container.innerHTML = '<div class="error">加载失败</div>'; }
+    }
+
+    async function loadCategoryNews() {
+        const container = document.getElementById('categoryNewsList');
+        container.innerHTML = '<div class="loading">加载中...</div>';
+        try {
+            const res = await fetch(`${API_BASE}/category_news?category=${encodeURIComponent(currentCategory)}&page=${currentPage}&page_size=${pageSize}`);
+            const data = await res.json();
+            if (data.news) {
+                lastCategoryNews = data.news;
+                cacheNewsList(lastCategoryNews);
+                renderCategoryList();
+                totalPages = data.total_pages || 1;
+                renderPagination();
+            } else throw new Error();
+        } catch(e) { container.innerHTML = '<div class="error">加载失败</div>'; }
+    }
+
+    async function loadMetrics(days=7) {
+        try {
+            const res = await fetch(`${API_BASE}/admin/metrics?days=${days}`);
+            if (!res.ok) return;
+            const data = await res.json();
+            const pct = v => `${(Number(v||0)*100).toFixed(2)}%`;
+            document.getElementById('metricCtr').innerText = pct(data.ctr);
+            document.getElementById('metricActiveUsers').innerText = data.active_users || 0;
+            document.getElementById('metricDwell').innerText = Number(data.avg_dwell_time||0).toFixed(1);
+            document.getElementById('metricFavoriteRate').innerText = pct(data.favorite_rate);
+            document.getElementById('metricExposure').innerText = data.exposure_count || 0;
+            document.getElementById('metricFeedback').innerText = data.feedback_count || 0;
+        } catch(e) {}
+    }
+
+    function renderPagination() {
+        const container = document.getElementById('pagination');
+        container.innerHTML = `
+            <button class="page-btn" onclick="changePage(${currentPage-1})" ${currentPage<=1?'disabled':''}>上一页</button>
+            <span class="page-info">第 ${currentPage} / ${totalPages} 页</span>
+            <button class="page-btn" onclick="changePage(${currentPage+1})" ${currentPage>=totalPages?'disabled':''}>下一页</button>
+            <span>跳至</span>
+            <input type="number" class="page-input" id="pageInput" value="${currentPage}" min="1" max="${totalPages}">
+            <button class="page-btn" onclick="jumpToPage()">GO</button>
+        `;
+    }
+    function changePage(p) { if(p>=1 && p<=totalPages) { currentPage=p; loadCategoryNews(); document.getElementById('categoryTitle').innerHTML = `📰 最新 · ${currentCategory} 第${currentPage}页`; } }
+    function jumpToPage() { let p = parseInt(document.getElementById('pageInput').value); if(!isNaN(p)) changePage(p); }
+    function refreshRecommend() { loadRecommend(); }
+
+    function selectCategory(cat) {
+        currentCategory = cat;
+        currentPage = 1;
+        document.getElementById('categoryTitle').innerHTML = `📰 最新 · ${cat}`;
+        loadCategoryNews();
+        document.querySelectorAll('.cat-horizontal').forEach(el => {
+            if(el.dataset.cat === cat) el.classList.add('active');
+            else el.classList.remove('active');
+        });
+    }
+
+    async function loadCategories() {
+        const container = document.getElementById('categoryListHorizontal');
+        let cats = [];
+        try {
+            const res = await fetch(`${API_BASE}/stats`);
+            const data = await res.json();
+            if(data.category_stats) cats = Object.keys(data.category_stats).map(n => ({name:n, count:data.category_stats[n]}));
+            else cats = ['科技','体育','娱乐','财经','军事','社会','教育','健康','国际','时尚'].map(n=>({name:n,count:0}));
+        } catch(e) { cats = ['科技','体育','娱乐','财经','军事','社会','教育','健康','国际','时尚'].map(n=>({name:n,count:0})); }
+        container.innerHTML = cats.map(cat => `<div class="cat-horizontal ${cat.name===currentCategory?'active':''}" data-cat="${cat.name}" onclick="selectCategory('${cat.name}')"><span>${cat.name}</span><span style="font-size:11px;">(${cat.count})</span></div>`).join('');
+    }
+
+    // 搜索功能
+    async function performSearch() {
+        const keyword = document.getElementById('searchKeyword').value.trim();
+        if(!keyword) return;
+        const placeholder = document.getElementById('searchPlaceholder');
+        const resultsDiv = document.getElementById('searchResults');
+        placeholder.style.display = 'none';
+        resultsDiv.style.display = 'block';
+        resultsDiv.innerHTML = '<div class="loading">搜索中...</div>';
+        try {
+            const res = await fetch(`${API_BASE}/search_by_title?keyword=${encodeURIComponent(keyword)}&limit=30`);
+            const data = await res.json();
+            if(data.news && data.news.length) {
+                cacheNewsList(data.news);
+                resultsDiv.innerHTML = `<div class="news-grid">${data.news.map(renderNewsCard).join('')}</div>`;
+            } else {
+                resultsDiv.innerHTML = '<div class="error">未找到相关新闻</div>';
+            }
+        } catch(e) { resultsDiv.innerHTML = '<div class="error">搜索失败</div>'; }
+    }
+    document.getElementById('searchKeyword').addEventListener('keypress', function(e) { if(e.key === 'Enter') performSearch(); });
+
+    function isFavorite(id) { return !!favorites[id]; }
+    function isRead(id) { return !!readNews[id]; }
+    async function toggleFavorite(newsId, event) {
+        event.stopPropagation();
+        const btn = event.currentTarget;
+        const heartSpan = btn.querySelector('.heart-icon');
+        const wasFavorite = favorites[newsId];
+        if (wasFavorite) {
+            delete favorites[newsId];
+            btn.classList.remove('active');
+            heartSpan.innerHTML = '♡';
+        } else {
+            favorites[newsId] = true;
+            btn.classList.add('active');
+            heartSpan.innerHTML = '❤️';
+        }
+        btn.classList.add('favorite-btn-animate');
+        setTimeout(() => btn.classList.remove('favorite-btn-animate'), 300);
+        saveFavorites();
+        updateBehaviorSummary();
+        if (currentUser && currentUser.username) {
+            const method = favorites[newsId] ? 'POST' : 'DELETE';
+            try {
+                await fetch(`${API_BASE}/user/favorites`, {
+                    method,
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ user_id: currentUser.username, news_id: newsId })
+                });
+                if (method === 'POST') {
+                    sendFeedback(newsId, 0, true, true);
+                }
+            } catch (e) { console.error(e); }
+        }
+        if (currentPanel === 'favorites') {
+            renderFavoritesPanel();
+        }
+    }
+    async function sendFeedback(newsId, dwell, clicked, liked) {
+        if(!currentUser) return;
+        try {
+            const res = await fetch(`${API_BASE}/feedback`, {
+                method:'POST', headers:{'Content-Type':'application/json'},
+                body:JSON.stringify({user_id:currentUser.username, news_id:newsId, clicked, dwell_time:dwell, liked})
+            });
+            const data = await res.json();
+            if(data.user_vector) { currentUser.user_vector = data.user_vector; localStorage.setItem('currentUser', JSON.stringify(currentUser)); }
+        } catch(e) {}
+    }
+    async function markAsRead(newsId, newsTitle = '', newsSource = '', newsCategory = '', newsImage = '', newsUrl = '') {
+        const existing = readNews[newsId] || { readCount: 0, lastRead: 0 };
+        existing.readCount += 1;
+        existing.lastRead = Date.now();
+        // 保存元数据（如果传入）
+        if (newsTitle) existing.title = newsTitle;
+        if (newsSource) existing.source = newsSource;
+        if (newsCategory) existing.category = newsCategory;
+        if (newsImage) existing.image = newsImage;
+        if (newsUrl) existing.url = newsUrl;
+        readNews[newsId] = existing;
+        localStorage.setItem('read_news_history', JSON.stringify(readNews));
+        updateBehaviorSummary();
+        // 同步到后端（原有的）
+        if(currentUser && currentUser.username) {
+            await fetch(`${API_BASE}/user/read`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ user_id: currentUser.username, news_id: newsId })
+            });
+        }
+        renderHistoryPanel();
+        document.querySelectorAll(`[data-news-id="${newsId}"]`).forEach(el => el.classList.add('read'));
+    }
+    function renderNewsCard(news) {
+        const readClass = isRead(news.news_id) ? 'read' : '';
+        const favActive = isFavorite(news.news_id) ? 'active' : '';
+        const imgUrl = news.thumbnail_pic_s || news.image || news.thumbnail || '';
+        return `<div class="news-card ${readClass}" data-news-id="${news.news_id}"
+                onclick="openNewsDetail('${news.news_id}', '${escapeHtml(news.title)}', '${imgUrl}', '${escapeHtml(news.source||'')}', '${news.publish_time||''}', '${escapeHtml(news.summary||'')}', '${news.url||''}')">
+            <img class="news-img" src="${imgUrl}" onerror="this.src='data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22100%25%22%20height%3D%22100%25%22%20viewBox%3D%220%200%20100%20100%22%3E%3Crect%20width%3D%22100%22%20height%3D%22100%22%20fill%3D%22%23f0f0f0%22%2F%3E%3Ctext%20x%3D%2250%25%22%20y%3D%2250%25%22%20dominant-baseline%3D%22middle%22%20text-anchor%3D%22middle%22%20fill%3D%22%23999%22%20font-size%3D%2240%22%3E📰%3C%2Ftext%3E%3C%2Fsvg%3E'">
+            <div class="news-content">
+                <div class="news-title">${escapeHtml(news.title)}</div>
+                <div class="news-meta"><span class="news-category">${escapeHtml(news.category)}</span><span>${news.publish_time?news.publish_time.split(' ')[0]:''}</span></div>
+                <div class="news-summary">${escapeHtml(news.summary||'')}</div>
+                <div class="news-footer"><span>📰 ${escapeHtml(news.source||'未知')}</span>
+                    <button class="favorite-btn ${favActive}" data-news-id="${news.news_id}" onclick="toggleFavorite('${news.news_id}', event)"><span class="heart-icon">${favActive === 'active' ? '❤️' : '♡'}</span></button>
+                </div>
+            </div>
+        </div>`;
+    }
+    function escapeHtml(str) { if(!str) return ''; return str.replace(/[&<>]/g, function(m){ if(m==='&') return '&amp;'; if(m==='<') return '&lt;'; if(m==='>') return '&gt;'; return m;}); }
+
+    async function openNewsDetail(id, title, img, src, pub, summary, newsUrl) {
+        const modal = document.getElementById('newsModal');
+        const modalContent = document.getElementById('modalContent');
+        if (!newsUrl) {
+            if (readNews[id] && readNews[id].url) {
+                newsUrl = readNews[id].url;
+            } else {
+                alert('无法获取新闻链接');
+                return;
+            }
+        }
+        markAsRead(id, title, src, newsMetaMap[id]?.category || '未知', img, newsUrl);
+
+        modalContent.innerHTML = '<div class="loading">加载正文...</div>';
+        modal.style.display = 'flex';
+        const start = Date.now();
+        try {
+            const resp = await fetch(`${API_BASE}/article?id=${id}`);
+            if (resp.ok) {
+                const data = await resp.json();
+                const bodyHtml = data.content || (summary ? `<p>${escapeHtml(summary)}</p>` : '<p>暂无正文</p>');
+                modalContent.innerHTML = `
+                    <h2 class="modal-title">${escapeHtml(title)}</h2>
+                    <div class="modal-meta">${escapeHtml(src)} · ${pub}</div>
+                    <div class="modal-body">${bodyHtml}</div>
+                    <div style="padding: 16px; text-align: center; border-top: 1px solid #e9ecef; margin-top: 16px;">
+                        <a href="${newsUrl}" target="_blank" rel="noopener noreferrer" style="color: #667eea;">📖 查看原文</a>
+                    </div>
+                `;
+            } else {
+                throw new Error('获取正文失败');
+            }
+        } catch (e) {
+            modalContent.innerHTML = `
+                <div style="padding: 20px; text-align: center;">
+                    <p>正文加载失败，可点击下方按钮在新窗口查看原文。</p>
+                    <button class="page-btn" onclick="window.open('${newsUrl}', '_blank')">新窗口打开</button>
+                    <button class="page-btn" onclick="closeModal()">关闭</button>
+                </div>
+            `;
+        }
+        const interval = setInterval(() => {
+            if (modal.style.display !== 'flex') {
+                clearInterval(interval);
+                const dwell = Math.round((Date.now() - start) / 1000);
+                sendFeedback(id, dwell, true, dwell > 20);
+            }
+        }, 1000);
+    }
+    function closeModal() { document.getElementById('newsModal').style.display = 'none'; }
+
+    async function renderFavoritesPanel() {
+        const ids = Object.keys(favorites);
+        const list = ids.map(id=>newsMetaMap[id]||{news_id:id, title:`新闻 ${id}`, category:'未知', source:'', summary:''});
+        const total = list.length;
+        const totalPagesFav = Math.ceil(total/favoritesPageSize);
+        if(favoritesPage>totalPagesFav) favoritesPage=1;
+        const start = (favoritesPage-1)*favoritesPageSize;
+        const pageItems = list.slice(start, start+favoritesPageSize);
+        document.getElementById('favoritesList').innerHTML = pageItems.length ? pageItems.map(renderNewsCard).join('') : '<div class="error">暂无收藏</div>';
+        document.getElementById('favoritesPagination').innerHTML = `<button class="page-btn" onclick="changeFavoritesPage(${favoritesPage-1})" ${favoritesPage<=1?'disabled':''}>上一页</button><span>${favoritesPage}/${totalPagesFav||1}</span><button class="page-btn" onclick="changeFavoritesPage(${favoritesPage+1})" ${favoritesPage>=totalPagesFav?'disabled':''}>下一页</button>`;
+    }
+    function changeFavoritesPage(p) { if(p>=1) { favoritesPage=p; renderFavoritesPanel(); } }
+
+    // 渲染右侧历史记录
+    function renderHistoryPanel() {
+        const container = document.getElementById('historyList');
+        const entries = Object.entries(readNews)
+            .map(([nid, v]) => ({
+                news_id: nid,
+                readCount: v.readCount,
+                lastRead: v.lastRead,
+                title: v.title || `新闻 ${nid}`,
+                source: v.source || '未知',
+                category: v.category || '未知',
+                image: v.image || '',
+                url: v.url || ''
+            }))
+            .sort((a, b) => b.lastRead - a.lastRead);
+
+        if (!entries.length) {
+            container.innerHTML = '<div class="error">暂无阅读记录</div>';
+            return;
+        }
+        container.innerHTML = entries.slice(0, 30).map(item => {
+            const time = item.lastRead ? new Date(item.lastRead).toLocaleString() : '未知';
+            return `<div class="history-item" onclick="openNewsDetail('${item.news_id}', '${escapeHtml(item.title)}', '${item.image}', '${escapeHtml(item.source)}', '', '', '${item.url}')">
+                        <div class="history-title">${escapeHtml(item.title)}</div>
+                        <div class="history-meta">${escapeHtml(item.category)} · ${escapeHtml(item.source)} · 阅读 ${item.readCount} 次 · ${time}</div>
+                    </div>`;
+        }).join('');
+    }
+
+    // 初始化
+    window.onload = async function() {
+        const userStr = localStorage.getItem('currentUser');
+        if (!userStr) { window.location.href = 'login.html'; return; }
+        currentUser = JSON.parse(userStr);
+        document.getElementById('usernameDisplay').innerText = currentUser.username;
+        await loadMetrics(7);
+        await loadCategories();
+        await loadRecommend();
+        await loadCategoryNews();
+        updateBehaviorSummary();
+        renderFavoritesPanel();
+        renderHistoryPanel();
+        switchPanel('home');
+        // 同步服务器收藏（合并而非覆盖）
+        try {
+            const favRes = await fetch(`${API_BASE}/user/favorites?user_id=${encodeURIComponent(currentUser.username)}`);
+            if(favRes.ok) {
+                const favData = await favRes.json();
+                (favData.favorites||[]).forEach(id => { favorites[id] = true; });
+                saveFavorites();
+                updateBehaviorSummary();
+                renderFavoritesPanel();
+            }
+            const readRes = await fetch(`${API_BASE}/user/read?user_id=${encodeURIComponent(currentUser.username)}`);
+            if (readRes.ok) {
+                const readData = await readRes.json();
+                if (readData.read_history) {
+                    // 合并服务器数据到本地，不覆盖已有元数据
+                    for (const [nid, serverRecord] of Object.entries(readData.read_history)) {
+                        if (!readNews[nid]) {
+                            readNews[nid] = { readCount: 0, lastRead: 0 };
+                        }
+                        readNews[nid].readCount = serverRecord.readCount;
+                        readNews[nid].lastRead = serverRecord.lastRead;
+                        // 注意：不修改 title、source、category、image、url 等字段
+                    }
+                    localStorage.setItem('read_news_history', JSON.stringify(readNews));
+                    updateBehaviorSummary();
+                    renderHistoryPanel();
+                }
+            }
+        } catch(e) {}
+    };
+    function logout() { localStorage.removeItem('currentUser'); window.location.href = 'login.html'; }
+</script>
+</body>
+</html>
